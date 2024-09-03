@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-app
+  labels:
+    app: demo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: demo
+  template:
+    metadata:
+      labels:
+        app: demo
+    spec:
+      containers:
+      - name: demo
+        image: gcr.io/k8s-k3s/demo:v1.0.0
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: mydata
+          mountPath: /data  # Change this to your desired mount path in the container
+        livenessProbe:
+          httpGet:
+            path: /healthz  # Change this to your health check endpoint
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready  # Change this to your readiness check endpoint
+            port: 8080
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          failureThreshold: 3
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+      volumes:
+      - name: mydata
+        emptyDir: {}  # Change this to your specific volume type if needed
